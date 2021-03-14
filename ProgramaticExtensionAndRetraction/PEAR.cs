@@ -8,8 +8,9 @@ namespace ProgramaticExtensionAndRetraction
 {
     public class PEAR : PartModule
     {
+        // Event to extend all
 
-        [KSPEvent(active = true, guiActive = false, isPersistent = true, guiName = "Extend ALL Extendables")]
+        [KSPEvent(active = true, guiActive = true, isPersistent = true, guiName = "Extend ALL Extendables")]
         public void ExtendAll()
         {
             try
@@ -24,6 +25,8 @@ namespace ProgramaticExtensionAndRetraction
                     foreach (var part in deployableList)
                     {
                         part.SendEvent("Extend");
+                        part.GetComponent<PEAR>().Events["ExtendAll"].active = false;
+                        part.GetComponent<PEAR>().Events["RetractAll"].active = true;
                     }
                 else
                 {
@@ -38,13 +41,16 @@ namespace ProgramaticExtensionAndRetraction
             }
         }
 
+        // event to retract all
 
-        [KSPEvent(active = true, guiActive = false, isPersistent = true, guiName = "Retract ALL Extendables")]
+        [KSPEvent(active = true, guiActive = true, isPersistent = true, guiName = "Retract ALL Extendables")]
         public void RetractAll()
         {
             foreach (var part in deployableList)
             {
                 part.SendEvent("Retract");
+                part.GetComponent<PEAR>().Events["ExtendAll"].active = true;
+                part.GetComponent<PEAR>().Events["RetractAll"].active = false;
             }
         }
 
@@ -54,6 +60,7 @@ namespace ProgramaticExtensionAndRetraction
         private List<Part> deployableList;
        
         
+        // if fairing present, prevent extend action to avoid panels potentially extending through the fairing
         private bool CheckFairing()
         {
             bool canGo = true;
@@ -83,6 +90,7 @@ namespace ProgramaticExtensionAndRetraction
             return canGo;
         }
 
+        // back up for persistance
         private void CheckState()
         {
             try
@@ -96,8 +104,15 @@ namespace ProgramaticExtensionAndRetraction
                     if (deployState == ModuleDeployablePart.DeployState.EXTENDED)
                     {
                         ExtendAll();
+                        part.GetComponent<PEAR>().Events["ExtendAll"].active = false;
+                        part.GetComponent<PEAR>().Events["RetractAll"].active = true;
                     }
-                    else return;
+                    else
+                    {
+                        RetractAll();
+                        part.GetComponent<PEAR>().Events["ExtendAll"].active = true;
+                        part.GetComponent<PEAR>().Events["RetractAll"].active = false;
+                    }
                 }
             }
 
@@ -124,7 +139,6 @@ namespace ProgramaticExtensionAndRetraction
                     }
 
                     CheckState();
-
 
                 }
                 catch
