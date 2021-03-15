@@ -1,5 +1,6 @@
 # Programatic Extension And Retraction (P.E.A.R.)
 
+
 DESCRIPTION
 
 Sick of hunting around in the dark for each solar panel, antenna or radiator to manually extend? 
@@ -14,6 +15,7 @@ can communicate with each other and send simple commands to each to create a loc
 result is, when you right click the part, there is an option to extend/retract ALL other parts in the 
 network with a single click. You can also disconnect a part from the network so it won't be controlled 
 should you not wish to extend a panel whilst it's inside a cargo bay for example.
+
 
 
 INSTRUCTIONS
@@ -33,12 +35,15 @@ INSTRUCTIONS
   will still be unable to extend if stowed ie in a cargo bay).
   
   
+  
   DEPENDENCIES
   
   - ModuleManager by Sarbian & Blowfish (included in .ZIP for player for convenience)
   
   
+  
   LICENCE
   
-  PEAR - MIT-Licence
+  PEAR - MIT Licence
+  
   ModuleManager redistributed under CC-BY-NC-SA as requested/required
