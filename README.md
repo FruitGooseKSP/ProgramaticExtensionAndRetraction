@@ -21,7 +21,8 @@ should you not wish to extend a panel whilst it's inside a cargo bay for example
 INSTRUCTIONS
 
 - PEAR is automatically added to all solar panels, radiators and antennae (included mods assuming they use 
-  the same Extending Module the stock parts use - which they normally do).
+  the same Extending Module the stock parts use - which they normally do), with the exception of the 
+  non-deploying OX-Stat stock panels.
 - You can pre-disable a part in the Editor by right clicking and turning it off using the button. The status
   message will confirm whether it is on or off.
 - In flight, the same option is available allowing you to re-link the part to the network or remove as 
@@ -33,6 +34,10 @@ INSTRUCTIONS
   extended, it will also extend to match them).
 - Any parts connected will still be subject to stock abilities (can still extend/retract independently, 
   will still be unable to extend if stowed ie in a cargo bay).
+- As a bonus, the "one-shot" non-retractable stock panels are now retractable.
+- If you wish to completely remove PEAR from specific parts from the game (ie flat, non-extendables), 
+  there is a text file inside PluginData. Simply add the part name(s) to the list (1 per line) and they
+  will be excluded.
   
   
   
@@ -46,4 +51,4 @@ INSTRUCTIONS
   
   PEAR - MIT Licence
   
-  ModuleManager redistributed under CC-BY-NC-SA as requested/required
+  ModuleManager redistributed under Creative Commons CC-BY-NC-SA as requested/required
