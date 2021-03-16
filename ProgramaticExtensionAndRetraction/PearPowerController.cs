@@ -16,14 +16,24 @@ namespace ProgramaticExtensionAndRetraction
             {
                 this.part.GetComponent<PearPowerController>().powerIsOn = false;
                 this.part.GetComponent<PearPowerController>().pearStatus = GetPearStatus();
-                PEAR.TogglePowerAction(this.part, false);
+
+                if (HighLogic.LoadedSceneIsFlight)
+                {
+                    PEAR.TogglePowerAction(this.part, false);
+                }
+                
             }
 
             else
             {
                 this.part.GetComponent<PearPowerController>().powerIsOn = true;
                 this.part.GetComponent<PearPowerController>().pearStatus = GetPearStatus();
-                PEAR.TogglePowerAction(this.part, true);
+
+                if (HighLogic.LoadedSceneIsFlight)
+                {
+                    PEAR.TogglePowerAction(this.part, true);
+                }
+
             }
 
 

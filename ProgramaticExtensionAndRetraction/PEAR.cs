@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -9,7 +10,8 @@ namespace ProgramaticExtensionAndRetraction
     [KSPAddon(KSPAddon.Startup.FlightAndEditor, false)]
     public class PEAR : MonoBehaviour
     {
-
+        private List<string> blackList;
+        private string filePath = KSPUtil.ApplicationRootPath + "/GameData/FruitKocktail/PEAR/PluginData/blacklist.txt";
         private static bool extendStatus;
 
         public static bool groupExtendStatus
@@ -23,105 +25,71 @@ namespace ProgramaticExtensionAndRetraction
                 extendStatus = value;
             }
         }
-        private int GetModuleType(Part _part)
+   
+        public static void TogglePowerAction(Part part, bool powerOn)
         {
-            if (_part.HasModuleImplementing<ModuleDeployableSolarPanel>())
+            if (powerOn)
             {
-                return 0;
-            }
-            else if (_part.HasModuleImplementing<ModuleDeployableAntenna>())
-            {
-                return 1;
-            }
-            else if (_part.HasModuleImplementing<ModuleDeployableRadiator>())
-            {
-                return 2;
-            }
-            else return 0;
-        }
-    
-        // Global toggling of extend and retract
-        public static void TogglePowerAction(Part part, bool powerIsOn)
-        {
-            if (powerIsOn)
-            {
-                part.AddModule("PearModule", true);
-
-
                 if (extendStatus)
                 {
-                    int type = part.GetComponent<PearModule>().moduleType;
-
-                    if (type == 0)
+                    try
                     {
-                        part.GetComponent<ModuleDeployableSolarPanel>().Events["Extend"].Invoke();
-                    }
-                    else if (type == 1)
-                    {
-                        part.GetComponent<ModuleDeployableAntenna>().Events["Extend"].Invoke();
-                    }
-                    else if (type == 2)
-                    {
-                        part.GetComponent<ModuleDeployableRadiator>().Events["Extend"].Invoke();
+                        part.GetComponent<ModuleDeployablePart>().Extend();
+                        part.GetComponent<PearModule>().Events["RetractAll"].active = true;
+                        part.GetComponent<PearModule>().Events["ExtendAll"].active = false;
                     }
 
-                    part.GetComponent<PearModule>().Events["RetractAll"].active = true;
-                    part.GetComponent<PearModule>().Events["ExtendAll"].active = false;
+                    catch
+                    {
+                        Debug.LogError("Error: PEAR.TogglePowerAction 1");
+                    }
                 }
-
-                else
+                else if (!extendStatus)
                 {
-                    int type = part.GetComponent<PearModule>().moduleType;
-
-                    if (type == 0)
+                    try
                     {
-                        part.GetComponent<ModuleDeployableSolarPanel>().Events["Retract"].Invoke();
-                    }
-                    else if (type == 1)
-                    {
-                        part.GetComponent<ModuleDeployableAntenna>().Events["Retract"].Invoke();
-                    }
-                    else if (type == 2)
-                    {
-                        part.GetComponent<ModuleDeployableRadiator>().Events["Retract"].Invoke();
+                        part.GetComponent<ModuleDeployablePart>().Retract();
+                        part.GetComponent<PearModule>().Events["RetractAll"].active = false;
+                        part.GetComponent<PearModule>().Events["ExtendAll"].active = true;
                     }
 
-                    part.GetComponent<PearModule>().Events["RetractAll"].active = false;
-                    part.GetComponent<PearModule>().Events["ExtendAll"].active = true;
+                    catch
+                    {
+                        Debug.LogError("Error: PEAR.TogglePowerAction 2");
+                    }
                 }
-
             }
+
             else
             {
-                part.RemoveModule(part.GetComponent<PearModule>());
+                part.GetComponent<PearModule>().Events["RetractAll"].active = false;
+                part.GetComponent<PearModule>().Events["ExtendAll"].active = false;
             }
 
-        } 
+
+
+        }
 
         public static void ProcessPear(bool isTypeExtend)
         {
-            groupExtendStatus = isTypeExtend;
+            extendStatus = isTypeExtend;
 
             if (isTypeExtend)
             {
                 foreach (var part in FlightGlobals.ActiveVessel.Parts)
                 {
-                    if (part.HasModuleImplementing<PearModule>())
+                    if (part.HasModuleImplementing<PearPowerController>())
                     {
-                        int type = part.GetComponent<PearModule>().moduleType;
-
-                        if (type == 0)
+                        if (part.GetComponent<PearPowerController>().powerIsOn)
                         {
-                            part.GetComponent<ModuleDeployableSolarPanel>().Events["Extend"].Invoke();
+                            try
+                            {
+                                part.GetComponent<ModuleDeployablePart>().Extend();
+                            }
+                            catch { continue; }
+                            
                         }
-                        else if (type == 1)
-                        {
-                            part.GetComponent<ModuleDeployableAntenna>().Events["Extend"].Invoke();
-                        }
-                        else if (type == 2)
-                        {
-                            part.GetComponent<ModuleDeployableRadiator>().Events["Extend"].Invoke();
-                        }
+                    
 
                         part.GetComponent<PearModule>().Events["RetractAll"].active = true;
                         part.GetComponent<PearModule>().Events["ExtendAll"].active = false;
@@ -132,63 +100,81 @@ namespace ProgramaticExtensionAndRetraction
             {
                 foreach (var part in FlightGlobals.ActiveVessel.Parts)
                 {
-                    if (part.HasModuleImplementing<PearModule>())
+                    if (part.HasModuleImplementing<PearPowerController>())
                     {
-                        int type = part.GetComponent<PearModule>().moduleType;
+                        if (part.GetComponent<PearPowerController>().powerIsOn)
+                        {
+                            try
+                            {
+                                if (part.GetComponent<ModuleDeployablePart>().retractable)
+                                {
+                                    part.GetComponent<ModuleDeployablePart>().Retract();
+                                }
+                            }
+                            catch { continue; }
 
-                        if (type == 0)
-                        {
-                            part.GetComponent<ModuleDeployableSolarPanel>().Events["Retract"].Invoke();
-                        }
-                        else if (type == 1)
-                        {
-                            part.GetComponent<ModuleDeployableAntenna>().Events["Retract"].Invoke();
-                        }
-                        else if (type == 2)
-                        {
-                            part.GetComponent<ModuleDeployableRadiator>().Events["Retract"].Invoke();
                         }
 
-                        part.GetComponent<PearModule>().Events["RetractAll"].active = false;
-                        part.GetComponent<PearModule>().Events["ExtendAll"].active = true;
+                        if (part.HasModuleImplementing<PearModule>())
+                        {
+                            part.GetComponent<PearModule>().Events["RetractAll"].active = false;
+                            part.GetComponent<PearModule>().Events["ExtendAll"].active = true;
+
+                        }
                     }
                 }
             }
+        }
+
+        public void PowerUpPearModule(Part _part)
+        {
+            _part.GetComponent<PearModule>().Events["ExtendAll"].active = true;
+
         }
 
         public void Start()
         {
+            blackList = new List<String>(File.ReadAllLines(filePath));
+
             if (HighLogic.LoadedSceneIsFlight)
             {
                 foreach (var part in FlightGlobals.ActiveVessel.Parts)
-                { 
-                   // remotely add ability to extend/retract
+                {
+                    if (blackList.Contains(part.name))
+                    {
+                        part.RemoveModule(part.GetComponent<PearPowerController>());
+                        part.RemoveModule(part.GetComponent<PearModule>());
+                    }
 
                     if (part.HasModuleImplementing<PearPowerController>())
                     {
-                       
-                        if (part.GetComponent<PearPowerController>().powerIsOn && !part.HasModuleImplementing<PearModule>())
+                        if (part.GetComponent<PearPowerController>().powerIsOn)
                         {
-                            part.AddModule("PearModule");
+                            PowerUpPearModule(part);
                         }
-                        else if (!part.GetComponent<PearPowerController>().powerIsOn && part.HasModuleImplementing<PearModule>())
-                        {
-                            part.RemoveModule(FlightGlobals.ActiveVessel.GetComponent<PearModule>());
-                        }
-                    }
 
-                    if (part.HasModuleImplementing<PearModule>())
-                    {
-                        part.GetComponent<PearModule>().moduleType = GetModuleType(part);
                     }
-
                 }
             }
         }
 
-        
 
+        public void Update()
+        {
+            if (HighLogic.LoadedSceneIsEditor)
+            {
+                foreach (var part in EditorLogic.fetch.ship.Parts)
+                {
+                    if (blackList.Contains(part.name) && part.HasModuleImplementing<PearPowerController>())
+                    {
+                        part.RemoveModule(part.GetComponent<PearPowerController>());
+                        part.RemoveModule(part.GetComponent<PearModule>());
+                    }
+                }
+            }
+        }
 
+       
 
 
     }
