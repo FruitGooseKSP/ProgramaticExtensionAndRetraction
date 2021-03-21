@@ -14,7 +14,6 @@ namespace ProgramaticExtensionAndRetraction
         private string filePath = KSPUtil.ApplicationRootPath + "/GameData/FruitKocktail/PEAR/PluginData/blacklist.txt";
         private static bool extendStatus;
         
-
         public static bool groupExtendStatus
         {
             get
@@ -27,6 +26,7 @@ namespace ProgramaticExtensionAndRetraction
             }
         }
    
+        // Sets a turned on part to match the rest of those on the vessel
         public static void TogglePowerAction(Part part, bool powerOn)
         {
             if (powerOn)
@@ -71,6 +71,7 @@ namespace ProgramaticExtensionAndRetraction
 
         }
 
+        // toggle extend & retract
         public static void ProcessPear(bool isTypeExtend)
         {
             extendStatus = isTypeExtend;
@@ -127,15 +128,39 @@ namespace ProgramaticExtensionAndRetraction
             }
         }
 
+        // set event as per power status
         public void PowerUpPearModule(Part _part)
         {
             _part.GetComponent<PearModule>().Events["ExtendAll"].active = true;
 
         }
 
+        // enables PEAR to function correctly on vessel switch (Issue #4)
+        public void PearWatcher(Vessel vOld, Vessel vNew)
+        {
+            foreach (var part in vNew.Parts)
+            {
+                if (part.HasModuleImplementing<PearPowerController>())
+                {
+                    if (part.GetComponent<PearPowerController>().powerIsOn)
+                    {
+                        PowerUpPearModule(part);
+                    }
+
+                }
+            }
+
+
+        }
+
         public void Start()
         {
             blackList = new List<String>(File.ReadAllLines(filePath));
+
+            GameEvents.onVesselSwitching.Add(PearWatcher);
+
+
+            // Confirm part isn't on blacklist and add PEAR events according to power status
 
             if (HighLogic.LoadedSceneIsFlight)
             {
@@ -163,12 +188,12 @@ namespace ProgramaticExtensionAndRetraction
                         }
                     }
 
-
-
                 }
+
             }
         }
 
+        // dynamically remove PEAR ability in the Editor for cleaner handling
 
         public void Update()
         {
@@ -182,7 +207,18 @@ namespace ProgramaticExtensionAndRetraction
                         part.RemoveModule(part.GetComponent<PearModule>());
                     }
                 }
+
+
+                
+
             }
+        }
+
+
+        public void OnDisable()
+        {
+            GameEvents.onVesselSwitching.Remove(PearWatcher);
+
         }
 
        
