@@ -13,6 +13,7 @@ namespace ProgramaticExtensionAndRetraction
         private List<string> blackList;
         private string filePath = KSPUtil.ApplicationRootPath + "/GameData/FruitKocktail/PEAR/PluginData/blacklist.txt";
         private static bool extendStatus;
+        
 
         public static bool groupExtendStatus
         {
@@ -138,22 +139,32 @@ namespace ProgramaticExtensionAndRetraction
 
             if (HighLogic.LoadedSceneIsFlight)
             {
-                foreach (var part in FlightGlobals.ActiveVessel.Parts)
+                foreach (var ves in FlightGlobals.Vessels)
                 {
-                    if (blackList.Contains(part.name))
+                    foreach (var part in ves.Parts)
                     {
-                        part.RemoveModule(part.GetComponent<PearPowerController>());
-                        part.RemoveModule(part.GetComponent<PearModule>());
-                    }
-
-                    if (part.HasModuleImplementing<PearPowerController>())
-                    {
-                        if (part.GetComponent<PearPowerController>().powerIsOn)
+                        if (blackList.Contains(part.name))
                         {
-                            PowerUpPearModule(part);
+                            try
+                            {
+                                part.RemoveModule(part.GetComponent<PearPowerController>());
+                                part.RemoveModule(part.GetComponent<PearModule>());
+                            }
+                            catch { continue; }
                         }
 
+                        else if (part.HasModuleImplementing<PearPowerController>())
+                        {
+                            if (part.GetComponent<PearPowerController>().powerIsOn)
+                            {
+                                PowerUpPearModule(part);
+                            }
+
+                        }
                     }
+
+
+
                 }
             }
         }
