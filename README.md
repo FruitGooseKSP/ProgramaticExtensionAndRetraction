@@ -46,6 +46,6 @@ INSTRUCTIONS
   
   LICENCE
   
-  PEAR - MIT Licence
+  MIT-Licence
   
  
