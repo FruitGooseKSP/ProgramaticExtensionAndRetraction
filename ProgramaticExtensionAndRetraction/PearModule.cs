@@ -12,8 +12,11 @@ namespace ProgramaticExtensionAndRetraction
 
         [KSPEvent(isPersistent = false, guiActive = true, guiActiveEditor = false, active = false, guiName = "Extend All Extendables")]
         public void ExtendAll()
-        {   
-            PEAR.ProcessPear(true);
+        {
+            if (this.part.GetComponent<ModuleDeployablePart>().deployState == ModuleDeployablePart.DeployState.RETRACTED)
+            {
+                PEAR.ToggleExtendables(true);
+            }
         }
 
         //retract all button
@@ -21,11 +24,13 @@ namespace ProgramaticExtensionAndRetraction
         [KSPEvent(isPersistent = false, guiActive = true, guiActiveEditor = false, active = false, guiName = "Retract All Extendables")]
         public void RetractAll()
         {
-            PEAR.ProcessPear(false);
+            if (this.part.GetComponent<ModuleDeployablePart>().deployState == ModuleDeployablePart.DeployState.EXTENDED)
+            {
+                PEAR.ToggleExtendables(false);
+            }
         }
 
         
-
        
 
 

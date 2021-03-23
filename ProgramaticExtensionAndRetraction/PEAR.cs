@@ -12,188 +12,206 @@ namespace ProgramaticExtensionAndRetraction
     {
         private List<string> blackList;
         private string filePath = KSPUtil.ApplicationRootPath + "/GameData/FruitKocktail/PEAR/PluginData/blacklist.txt";
-        private static bool extendStatus;
         
-        public static bool groupExtendStatus
+
+        public void VesselSwitchEvent(Vessel vOld, Vessel vNew)
         {
-            get
-            {
-                return PEAR.extendStatus;
-            }
-            set
-            {
-                extendStatus = value;
-            }
-        }
-   
-        // Sets a turned on part to match the rest of those on the vessel
-        public static void TogglePowerAction(Part part, bool powerOn)
-        {
-            if (powerOn)
-            {
-                if (extendStatus)
-                {
-                    try
-                    {
-                        part.GetComponent<ModuleDeployablePart>().Extend();
-                        part.GetComponent<PearModule>().Events["RetractAll"].active = true;
-                        part.GetComponent<PearModule>().Events["ExtendAll"].active = false;
-                    }
+            blackList = new List<String>(File.ReadAllLines(filePath));
 
-                    catch
-                    {
-                        Debug.LogError("Error: PEAR.TogglePowerAction 1");
-                    }
-                }
-                else if (!extendStatus)
-                {
-                    try
-                    {
-                        part.GetComponent<ModuleDeployablePart>().Retract();
-                        part.GetComponent<PearModule>().Events["RetractAll"].active = false;
-                        part.GetComponent<PearModule>().Events["ExtendAll"].active = true;
-                    }
-
-                    catch
-                    {
-                        Debug.LogError("Error: PEAR.TogglePowerAction 2");
-                    }
-                }
-            }
-
-            else
-            {
-                part.GetComponent<PearModule>().Events["RetractAll"].active = false;
-                part.GetComponent<PearModule>().Events["ExtendAll"].active = false;
-            }
-
-
-
-        }
-
-        // toggle extend & retract
-        public static void ProcessPear(bool isTypeExtend)
-        {
-            extendStatus = isTypeExtend;
-
-            if (isTypeExtend)
-            {
-                foreach (var part in FlightGlobals.ActiveVessel.Parts)
-                {
-                    if (part.HasModuleImplementing<PearPowerController>())
-                    {
-                        if (part.GetComponent<PearPowerController>().powerIsOn)
-                        {
-                            try
-                            {
-                                part.GetComponent<ModuleDeployablePart>().Extend();
-                            }
-                            catch { continue; }
-                            
-                        }
-                    
-
-                        part.GetComponent<PearModule>().Events["RetractAll"].active = true;
-                        part.GetComponent<PearModule>().Events["ExtendAll"].active = false;
-                    }
-                }
-            }
-            else
-            {
-                foreach (var part in FlightGlobals.ActiveVessel.Parts)
-                {
-                    if (part.HasModuleImplementing<PearPowerController>())
-                    {
-                        if (part.GetComponent<PearPowerController>().powerIsOn)
-                        {
-                            try
-                            {
-                                if (part.GetComponent<ModuleDeployablePart>().retractable)
-                                {
-                                    part.GetComponent<ModuleDeployablePart>().Retract();
-                                }
-                            }
-                            catch { continue; }
-
-                        }
-
-                        if (part.HasModuleImplementing<PearModule>())
-                        {
-                            part.GetComponent<PearModule>().Events["RetractAll"].active = false;
-                            part.GetComponent<PearModule>().Events["ExtendAll"].active = true;
-
-                        }
-                    }
-                }
-            }
-        }
-
-        // set event as per power status
-        public void PowerUpPearModule(Part _part)
-        {
-            _part.GetComponent<PearModule>().Events["ExtendAll"].active = true;
-
-        }
-
-        // enables PEAR to function correctly on vessel switch (Issue #4)
-        public void PearWatcher(Vessel vOld, Vessel vNew)
-        {
             foreach (var part in vNew.Parts)
             {
-                if (part.HasModuleImplementing<PearPowerController>())
+                if (blackList.Contains(part.name))
                 {
-                    if (part.GetComponent<PearPowerController>().powerIsOn)
+                    try
                     {
-                        PowerUpPearModule(part);
+                        part.RemoveModule(part.GetComponent<PearPowerController>());
+                        part.RemoveModule(part.GetComponent<PearModule>());
                     }
+                    catch
+                    {
+                        return;
+                    }
+                }
+
+                else if (part.HasModuleImplementing<PearPowerController>())
+                {
+                    PowerTogglePressed(part, 0);
+                }
+            }
+        }
+
+        public static void PowerTogglePressed(Part _part, int sender)
+        {
+            PearPowerController pPC = _part.GetComponent<PearPowerController>();
+
+            if (HighLogic.LoadedSceneIsEditor)
+            {
+                if (pPC.isPowerOn)
+                {
+                    pPC.isPowerOn = false;
+                    pPC.pearStatus = "OFFLINE";
+                }
+                else
+                {
+                    pPC.isPowerOn = true;
+                    pPC.pearStatus = "Active";
+                }
+            }
+
+            else if (HighLogic.LoadedSceneIsFlight)
+            {
+                if (!pPC.isPowerOn && sender == 0)
+                {
+                    pPC.isPowerOn = false;
+                    pPC.pearStatus = "OFFLINE";
+                }
+                else if (pPC.isPowerOn && sender == 0)
+                {
+                    pPC.isPowerOn = true;
+                    pPC.pearStatus = "Active";
 
                 }
+                else if (pPC.isPowerOn && sender == 1)
+                {
+                    pPC.isPowerOn = false;
+                    pPC.pearStatus = "OFFLINE";
+                }
+                else if (!pPC.isPowerOn && sender == 1)
+                {
+                    pPC.isPowerOn = true;
+                    pPC.pearStatus = "Active";
+                }
+                
+                
+                
+                SetPearModule(_part, pPC);
             }
 
 
         }
+
+        public static void SetPearModule(Part _part2, PearPowerController _pPC)
+        {
+            PearModule pM = _part2.GetComponent<PearModule>();
+            ModuleDeployablePart mDP = _part2.GetComponent<ModuleDeployablePart>();
+            PearPowerController pPC = _pPC;
+
+            if (pPC.isPowerOn && mDP.deployState == ModuleDeployablePart.DeployState.RETRACTED || 
+                mDP.deployState == ModuleDeployablePart.DeployState.RETRACTING)
+            {
+                pM.Events["ExtendAll"].active = true;
+                pM.Events["RetractAll"].active = false;
+
+            }
+
+            else if (pPC.isPowerOn && mDP.deployState == ModuleDeployablePart.DeployState.EXTENDED ||
+                mDP.deployState == ModuleDeployablePart.DeployState.EXTENDING)
+            {
+                pM.Events["ExtendAll"].active = false;
+                pM.Events["RetractAll"].active = true;
+            }
+
+            else if (!pPC.isPowerOn || mDP.deployState == ModuleDeployablePart.DeployState.BROKEN)
+            {
+                pM.Events["ExtendAll"].active = false;
+                pM.Events["RetractAll"].active = false;
+            }
+        }
+
+        public static void ToggleExtendables(bool toExtend)
+        {
+            ModuleDeployablePart mDP;
+            PearPowerController pPC;
+
+            if (toExtend)
+            {
+
+                foreach (var part in FlightGlobals.ActiveVessel.Parts)
+                {
+                    if (part.HasModuleImplementing<PearModule>())
+                    {
+                        mDP = part.GetComponent<ModuleDeployablePart>();
+                        pPC = part.GetComponent<PearPowerController>();
+
+                        if (pPC.isPowerOn)
+                        {
+                            mDP.Extend();
+                            SetPearModule(part, pPC);
+                        }
+                        else continue;
+
+                    }
+                    else continue;
+
+                   
+                }
+            }
+
+            else
+            {
+                foreach (var part in FlightGlobals.ActiveVessel.Parts)
+                {
+                    if (part.HasModuleImplementing<PearModule>())
+                    {
+                        mDP = part.GetComponent<ModuleDeployablePart>();
+                        pPC = part.GetComponent<PearPowerController>();
+
+                        if (pPC.isPowerOn)
+                        {
+                            mDP.Retract();
+                            SetPearModule(part, pPC);
+                        }
+                        else continue;
+
+                    }
+                    else continue;
+
+
+                }
+
+
+            }
+
+        }
+
+
+
+        
 
         public void Start()
         {
             blackList = new List<String>(File.ReadAllLines(filePath));
 
-            GameEvents.onVesselSwitching.Add(PearWatcher);
-
-
-            // Confirm part isn't on blacklist and add PEAR events according to power status
+            GameEvents.onVesselSwitching.Add(VesselSwitchEvent);
 
             if (HighLogic.LoadedSceneIsFlight)
             {
-                foreach (var ves in FlightGlobals.Vessels)
+                foreach (var part in FlightGlobals.ActiveVessel.Parts)
                 {
-                    foreach (var part in ves.Parts)
+                    if (blackList.Contains(part.name))
                     {
-                        if (blackList.Contains(part.name))
+                        try
                         {
-                            try
-                            {
-                                part.RemoveModule(part.GetComponent<PearPowerController>());
-                                part.RemoveModule(part.GetComponent<PearModule>());
-                            }
-                            catch { continue; }
+                            part.RemoveModule(part.GetComponent<PearPowerController>());
+                            part.RemoveModule(part.GetComponent<PearModule>());
                         }
-
-                        else if (part.HasModuleImplementing<PearPowerController>())
+                        catch
                         {
-                            if (part.GetComponent<PearPowerController>().powerIsOn)
-                            {
-                                PowerUpPearModule(part);
-                            }
-
+                            return;
                         }
                     }
 
+                    else if (part.HasModuleImplementing<PearPowerController>())
+                    {
+                        PowerTogglePressed(part, 0);
+                    }
                 }
+
+                
+
 
             }
         }
-
-        // dynamically remove PEAR ability in the Editor for cleaner handling
 
         public void Update()
         {
@@ -208,21 +226,17 @@ namespace ProgramaticExtensionAndRetraction
                     }
                 }
 
-
-                
-
             }
         }
 
 
-        public void OnDisable()
+        public void OnDestroy()
         {
-            GameEvents.onVesselSwitching.Remove(PearWatcher);
+            GameEvents.onVesselSwitching.Remove(VesselSwitchEvent);
+
 
         }
-
+          
        
-
-
     }
 }
