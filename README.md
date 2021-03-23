@@ -29,8 +29,6 @@ INSTRUCTIONS
 - Right click the part and select "Extend All Extendables" and all parts connected to the network will 
   extend along with the part you're operating. Conversely, to retract all, click "Retract All 
   Extendables" (only one option is available at a time).
-- If you re-connect a part to the network, it will adjust itself to match the others (ie if others are 
-  extended, it will also extend to match them).
 - Any parts connected will still be subject to stock abilities (can still extend/retract independently, 
   will still be unable to extend if stowed ie in a cargo bay).
 - As a bonus, the "one-shot" non-retractable stock panels are now retractable.
