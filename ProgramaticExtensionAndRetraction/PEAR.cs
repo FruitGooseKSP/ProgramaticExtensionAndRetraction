@@ -12,7 +12,8 @@ namespace ProgramaticExtensionAndRetraction
     {
         private List<string> blackList;
         private string filePath = KSPUtil.ApplicationRootPath + "/GameData/FruitKocktail/PEAR/PluginData/blacklist.txt";
-        
+   
+        // event to handle switching vessels
 
         public void VesselSwitchEvent(Vessel vOld, Vessel vNew)
         {
@@ -40,6 +41,7 @@ namespace ProgramaticExtensionAndRetraction
             }
         }
 
+        // power button controller
         public static void PowerTogglePressed(Part _part, int sender)
         {
             PearPowerController pPC = _part.GetComponent<PearPowerController>();
@@ -81,15 +83,12 @@ namespace ProgramaticExtensionAndRetraction
                     pPC.isPowerOn = true;
                     pPC.pearStatus = "Active";
                 }
-                
-                
-                
+                               
                 SetPearModule(_part, pPC);
             }
-
-
         }
 
+        // controls the PearModule
         public static void SetPearModule(Part _part2, PearPowerController _pPC)
         {
             PearModule pM = _part2.GetComponent<PearModule>();
@@ -118,6 +117,7 @@ namespace ProgramaticExtensionAndRetraction
             }
         }
 
+        // handles extending/retracting
         public static void ToggleExtendables(bool toExtend)
         {
             ModuleDeployablePart mDP;
@@ -142,7 +142,6 @@ namespace ProgramaticExtensionAndRetraction
 
                     }
                     else continue;
-
                    
                 }
             }
@@ -166,17 +165,11 @@ namespace ProgramaticExtensionAndRetraction
                     }
                     else continue;
 
-
                 }
-
-
             }
-
         }
 
-
-
-        
+ 
 
         public void Start()
         {
@@ -205,10 +198,7 @@ namespace ProgramaticExtensionAndRetraction
                     {
                         PowerTogglePressed(part, 0);
                     }
-                }
-
-                
-
+                } 
 
             }
         }
@@ -233,8 +223,6 @@ namespace ProgramaticExtensionAndRetraction
         public void OnDestroy()
         {
             GameEvents.onVesselSwitching.Remove(VesselSwitchEvent);
-
-
         }
           
        
