@@ -18,6 +18,8 @@ should you not wish to extend a panel whilst it's inside a cargo bay for example
 
 
 
+
+
 INSTRUCTIONS
 
 - PEAR is automatically added to all solar panels, radiators and antennae (included mods assuming they use 
@@ -36,14 +38,14 @@ INSTRUCTIONS
   
   
   
-  DEPENDENCIES
+DEPENDENCIES
   
-  - ModuleManager
+- ModuleManager
   
   
   
-  LICENCE
+LICENCE
   
-  MIT-Licence
+MIT-Licence
   
  
