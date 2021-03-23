@@ -40,7 +40,7 @@ INSTRUCTIONS
   
   DEPENDENCIES
   
-  - ModuleManager by Sarbian & Blowfish (included in .ZIP for player for convenience)
+  - ModuleManager
   
   
   
@@ -48,4 +48,4 @@ INSTRUCTIONS
   
   PEAR - MIT Licence
   
-  ModuleManager redistributed under Creative Commons CC-BY-NC-SA as requested/required
+ 
