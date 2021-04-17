@@ -207,14 +207,22 @@ namespace ProgramaticExtensionAndRetraction
         {
             if (HighLogic.LoadedSceneIsEditor)
             {
-                foreach (var part in EditorLogic.fetch.ship.Parts)
+                try
                 {
-                    if (blackList.Contains(part.name) && part.HasModuleImplementing<PearPowerController>())
+                    if (EditorLogic.fetch.ship.Parts != null)
                     {
-                        part.RemoveModule(part.GetComponent<PearPowerController>());
-                        part.RemoveModule(part.GetComponent<PearModule>());
+                        foreach (var part in EditorLogic.fetch.ship.Parts)
+                        {
+                            if (blackList.Contains(part.name) && part.HasModuleImplementing<PearPowerController>())
+                            {
+                                part.RemoveModule(part.GetComponent<PearPowerController>());
+                                part.RemoveModule(part.GetComponent<PearModule>());
+                            }
+                        }
                     }
                 }
+                catch { // no parts
+                      }
 
             }
         }
